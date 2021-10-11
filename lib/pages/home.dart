@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:band_names/models/band.dart';
+import 'package:pie_chart/pie_chart.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
@@ -58,9 +59,16 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: bands.length,
-        itemBuilder: (context, i) => _bandTile(bands[i]),
+      body: Column(
+        children: <Widget>[
+          _showGraph(),
+          Expanded(
+            child: ListView.builder(
+              itemCount: bands.length,
+              itemBuilder: (context, i) => _bandTile(bands[i]),
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
@@ -98,7 +106,10 @@ class _HomePageState extends State<HomePage> {
           '${band.votes}',
           style: const TextStyle(fontSize: 20),
         ),
-        onTap: () => socketService.socket.emit('vote-band', {'id': band.id}),
+        onTap: () {
+          socketService.socket.emit('vote-band', {'id': band.id});
+          setState(() {});
+        },
       ),
     );
   }
@@ -158,5 +169,15 @@ class _HomePageState extends State<HomePage> {
     }
 
     Navigator.pop(context);
+  }
+
+  Widget _showGraph() {
+    Map<String, double> dataMap = {};
+    bands.forEach((element) {
+      dataMap.putIfAbsent(element.name, () => element.votes.toDouble());
+    });
+
+    return Container(
+        width: double.infinity, height: 200, child: PieChart(dataMap: dataMap));
   }
 }
