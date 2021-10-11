@@ -19,14 +19,14 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     final socketService = Provider.of<SocketService>(context, listen: false);
 
-    socketService.socket.on('active-bands', (payload) {
-      bands =
-          (payload['bands'] as List).map((band) => Band.fromMap(band)).toList();
-
-      setState(() {});
-    });
+    socketService.socket.on('active-bands', _handleActiveBands);
 
     super.initState();
+  }
+
+  _handleActiveBands(dynamic payload) {
+    bands =
+        (payload['bands'] as List).map((band) => Band.fromMap(band)).toList();
   }
 
   @override
@@ -76,11 +76,7 @@ class _HomePageState extends State<HomePage> {
     return Dismissible(
       key: Key(band.id),
       direction: DismissDirection.startToEnd,
-      onDismissed: (_) {
-        print('id: ${band.id}');
-        //TODO: llamar el borrado
-        socketService.emit('delete-band', {'id': band.id});
-      },
+      onDismissed: (_) => socketService.emit('delete-band', {'id': band.id}),
       background: Container(
         padding: const EdgeInsets.only(left: 8.0),
         color: Colors.red,
@@ -102,10 +98,7 @@ class _HomePageState extends State<HomePage> {
           '${band.votes}',
           style: const TextStyle(fontSize: 20),
         ),
-        onTap: () {
-          socketService.socket.emit('vote-band', {'id': band.id});
-          setState(() {});
-        },
+        onTap: () => socketService.socket.emit('vote-band', {'id': band.id}),
       ),
     );
   }
@@ -116,47 +109,44 @@ class _HomePageState extends State<HomePage> {
     if (Platform.isAndroid) {
       showDialog(
         context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('New band name:'),
-            content: TextField(
-              controller: textController,
+        builder: (_) => AlertDialog(
+          title: const Text('New band name:'),
+          content: TextField(
+            controller: textController,
+          ),
+          actions: <Widget>[
+            MaterialButton(
+              child: const Text('Add'),
+              elevation: 5,
+              textColor: Colors.blue,
+              onPressed: () => addBandToList(textController.text),
             ),
-            actions: <Widget>[
-              MaterialButton(
-                child: const Text('Add'),
-                elevation: 5,
-                textColor: Colors.blue,
-                onPressed: () => addBandToList(textController.text),
-              ),
-            ],
-          );
-        },
+          ],
+        ),
       );
     }
 
     showCupertinoDialog(
-        context: context,
-        builder: (_) {
-          return CupertinoAlertDialog(
-            title: const Text('New band name:'),
-            content: CupertinoTextField(
-              controller: textController,
-            ),
-            actions: <Widget>[
-              CupertinoDialogAction(
-                child: const Text('Add'),
-                isDefaultAction: true,
-                onPressed: () => addBandToList(textController.text),
-              ),
-              CupertinoDialogAction(
-                child: const Text('Dismiss'),
-                isDestructiveAction: true,
-                onPressed: () => Navigator.pop(context),
-              ),
-            ],
-          );
-        });
+      context: context,
+      builder: (_) => CupertinoAlertDialog(
+        title: const Text('New band name:'),
+        content: CupertinoTextField(
+          controller: textController,
+        ),
+        actions: <Widget>[
+          CupertinoDialogAction(
+            child: const Text('Add'),
+            isDefaultAction: true,
+            onPressed: () => addBandToList(textController.text),
+          ),
+          CupertinoDialogAction(
+            child: const Text('Dismiss'),
+            isDestructiveAction: true,
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
+      ),
+    );
   }
 
   void addBandToList(String name) {
@@ -164,6 +154,7 @@ class _HomePageState extends State<HomePage> {
 
     if (name.length > 1) {
       socketService.emit('add-band', {'name': name});
+      setState(() {});
     }
 
     Navigator.pop(context);
