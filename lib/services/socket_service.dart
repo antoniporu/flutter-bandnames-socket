@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 
 import 'package:socket_io_client/socket_io_client.dart' as IO;
@@ -35,12 +33,5 @@ class SocketService with ChangeNotifier {
       _serverStatus = ServerStatus.Offline;
       notifyListeners();
     });
-
-    /*socket.on('nuevo-mensaje', (payload) {
-      print('nuevo-mensaje:');
-      print('nombre: ' + payload['nombre']);
-      print('mensaje: ' + payload['mensaje']);
-      print(payload.containsKey('mensaje2') ? payload['mensaje2'] : 'No hay');
-    });*/
   }
 }
