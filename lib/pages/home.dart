@@ -13,23 +13,18 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<Band> bands = [
-    /*Band(id: '1', name: 'Metallica', votes: 1),
-    Band(id: '2', name: 'Queen', votes: 20),
-    Band(id: '3', name: 'Héroes del Silencio', votes: 12),
-    Band(id: '4', name: 'Bon Jovi', votes: 5),*/
-  ];
+  List<Band> bands = [];
 
   @override
   void initState() {
     final socketService = Provider.of<SocketService>(context, listen: false);
 
     socketService.socket.on('active-bands', (payload) {
-      this.bands =
+      bands =
           (payload['bands'] as List).map((band) => Band.fromMap(band)).toList();
-    });
 
-    setState(() {});
+      setState(() {});
+    });
 
     super.initState();
   }
@@ -123,18 +118,17 @@ class _HomePageState extends State<HomePage> {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('New band name:'),
+            title: const Text('New band name:'),
             content: TextField(
               controller: textController,
             ),
             actions: <Widget>[
               MaterialButton(
-                  child: Text('Add'),
-                  elevation: 5,
-                  textColor: Colors.blue,
-                  onPressed: () {
-                    addBandToList(textController.text);
-                  })
+                child: const Text('Add'),
+                elevation: 5,
+                textColor: Colors.blue,
+                onPressed: () => addBandToList(textController.text),
+              ),
             ],
           );
         },
@@ -145,18 +139,18 @@ class _HomePageState extends State<HomePage> {
         context: context,
         builder: (_) {
           return CupertinoAlertDialog(
-            title: Text('New band name:'),
+            title: const Text('New band name:'),
             content: CupertinoTextField(
               controller: textController,
             ),
             actions: <Widget>[
               CupertinoDialogAction(
-                child: Text('Add'),
+                child: const Text('Add'),
                 isDefaultAction: true,
                 onPressed: () => addBandToList(textController.text),
               ),
               CupertinoDialogAction(
-                child: Text('Dismiss'),
+                child: const Text('Dismiss'),
                 isDestructiveAction: true,
                 onPressed: () => Navigator.pop(context),
               ),
@@ -166,10 +160,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   void addBandToList(String name) {
+    final socketService = Provider.of<SocketService>(context, listen: false);
+
     if (name.length > 1) {
-      // Podemos agregar
-      bands.add(Band(id: DateTime.now().toString(), name: name, votes: 3));
-      setState(() {});
+      socketService.emit('add-band', {'name': name});
     }
 
     Navigator.pop(context);
