@@ -76,6 +76,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _bandTile(Band band) {
+    final socketService = Provider.of<SocketService>(context, listen: false);
+
     return Dismissible(
       key: Key(band.id),
       direction: DismissDirection.startToEnd,
@@ -85,11 +87,11 @@ class _HomePageState extends State<HomePage> {
         //TODO: llamar el borrado
       },
       background: Container(
-        padding: EdgeInsets.only(left: 8.0),
+        padding: const EdgeInsets.only(left: 8.0),
         color: Colors.red,
         child: Align(
           alignment: Alignment.centerLeft,
-          child: Text(
+          child: const Text(
             'Delete band',
             style: TextStyle(color: Colors.white),
           ),
@@ -103,10 +105,11 @@ class _HomePageState extends State<HomePage> {
         title: Text(band.name),
         trailing: Text(
           '${band.votes}',
-          style: TextStyle(fontSize: 20),
+          style: const TextStyle(fontSize: 20),
         ),
         onTap: () {
-          print(band.name);
+          socketService.socket.emit('vote-band', {'id': band.id});
+          setState(() {});
         },
       ),
     );
